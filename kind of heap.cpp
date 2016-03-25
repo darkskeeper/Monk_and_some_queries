@@ -15,15 +15,16 @@ private:
     Leaf <T> * top;
 public:
     Heap ();
-    Heap (const Leaf <T> *);
+    Heap ( Leaf <T> * root );
     ~Heap();
-    void push ( const T & );
-    Leaf <T> * pop ( Leaf <T> * , const T & );
-    void insert ( Leaf <T> * , const T & );
+    void push ( T & value );
+    Leaf <T> * pop ( Leaf <T> * root, T & value);
+    void insert ( Leaf <T> * root, T & value);
     Leaf <T> * gettop();
-    void repush ( Leaf <T> * , Leaf <T> * );
-    int min( Leaf <T> * );
+    void repush ( Leaf <T> * old_root, Leaf <T> * new_root);
+    int min( Leaf <T> * root );
     int max();
+    void del_all( Leaf <T> * root );
 };
 
 int main()
@@ -71,41 +72,41 @@ Heap <T> :: Heap()
 }
 
 template <typename T>
-Heap <T> :: Heap(const Leaf <T> *obj)
+Heap <T> :: Heap(Leaf <T> *obj)
 {
-    this -> top = new Leaf <T> ();
-    top -> info = obj -> info;
-    top -> left = obj -> left;
-    top -> right = obj -> right;
+    this->top = new Leaf <T> ();
+    top->info = obj->info;
+    top->left = obj->left;
+    top->right = obj->right;
 }
 
 template <typename T>
 Heap <T> :: ~Heap()
 {
-    delete top;
+    del_all(top);
 }
 
 template <typename T>
-Leaf <T> * Heap <T> :: pop ( Leaf <T> * el , const T & a )
+Leaf <T> * Heap <T> :: pop ( Leaf <T> * el , T & a )
 {
     if ( el == NULL )
     {
         cout << "-1" << endl;
         return el;
     }
-    else if ( el -> info == a )
+    else if ( el->info == a )
     {
-        if ( el -> right == NULL && el -> left != NULL )
+        if ( el->right == NULL && el->left != NULL )
         {
-            *el = *el -> left;
+            *el = *el->left;
             return el;
         }
-        else if ( el -> left == NULL && el -> right != NULL )
+        else if ( el->left == NULL && el->right != NULL )
         {
-            *el = *el -> right;
+            *el = *el->right;
             return el;
         }
-        else if ( el -> left == NULL && el -> right == NULL )
+        else if ( el->left == NULL && el->right == NULL )
         {
             if ( el == top )
             {
@@ -124,8 +125,8 @@ Leaf <T> * Heap <T> :: pop ( Leaf <T> * el , const T & a )
         {
             if ( el == top )
             {
-                top = top -> right;
-                repush ( el -> left, top );
+                top = top->right;
+                repush ( el->left, top );
                 delete el;
                 return top;
             }
@@ -133,21 +134,27 @@ Leaf <T> * Heap <T> :: pop ( Leaf <T> * el , const T & a )
             {
                 Heap <T> ob(el);
                 Leaf <T> * el_new = ob.gettop();
-                *el = *el -> right;
-                repush ( el_new -> left , el );
+                *el = *el->right;
+                repush ( el_new->left , el );
                 el_new = NULL;
                 return el;
             }
         }
     }
-    else if ( el -> left != NULL && a <= el -> left -> info )
+    else if ( el->left != NULL && a <= el->left->info )
     {
-        el -> left = pop ( el -> left , a );
+        el->left = pop ( el->left , a );
+        if ( el->left == NULL && el->right != NULL)
+        {
+            int m = min (el->right);
+            insert ( el , m );
+            el->right = pop ( el->right , m );
+        }
         return el;
     }
-    else if ( el -> right != NULL )
+    else if ( el->right != NULL )
     {
-        el -> right = pop ( el -> right , a );
+        el->right = pop ( el->right , a );
         return el;
     }
     else
@@ -160,27 +167,27 @@ Leaf <T> * Heap <T> :: pop ( Leaf <T> * el , const T & a )
 template <typename T>
 void Heap <T> :: repush ( Leaf <T> * el , Leaf <T> * el_new )
 {
-    if ( el -> left != NULL ) 
+    if ( el->left != NULL ) 
     {
-        repush ( el -> left, el_new );
+        repush ( el->left, el_new );
     }
-    if ( el -> right != NULL )
+    if ( el->right != NULL )
     {
-        repush (el -> right, el_new );
+        repush (el->right, el_new );
     }
-    insert ( el_new, el -> info );
+    insert ( el_new, el->info );
     delete el;
 }
 
 template <typename T>
-void Heap <T> :: push( const T & a )
+void Heap <T> :: push( T & a )
 {
     if( top == NULL )
     {
         top = new Leaf <T> ();
-        top -> info = a;
-        top -> left = NULL;
-        top -> right = NULL;
+        top->info = a;
+        top->left = NULL;
+        top->right = NULL;
     }
     else
     {
@@ -189,43 +196,39 @@ void Heap <T> :: push( const T & a )
 }
 
 template <typename T>
-void Heap <T> :: insert ( Leaf <T> * el, const T & a )
+void Heap <T> :: insert ( Leaf <T> * el, T & a )
 {
     int temp;
-    if ( el -> info < a )
+    if ( el->info < a )
     {
-        temp = el -> info;
-        el -> info = a;
+        temp = el->info;
+        el->info = a;
     }
     else
     {
         temp = a;
     }
-    if ( el -> left == NULL )
+    if ( el->left == NULL )
     {
-        el -> left = new Leaf <T> ();
-        el -> left -> info = temp;
-        el -> left -> right = NULL;
-        el -> left -> left = NULL;
+        el->left = new Leaf <T> ();
+        el->left->info = temp;
+        el->left->right = NULL;
+        el->left->left = NULL;
     }
-    else if ( el -> left -> info >= temp)
+    else if ( el->left->info >= temp)
     {
         insert ( el->left , temp );
     }
-    else if ( el -> right == NULL)
+    else if ( el->right == NULL)
     {
-        el -> right = new Leaf <T> ();
-        el -> right -> info = temp;
-        el -> right -> right = NULL;
-        el -> right -> left = NULL;
-    }/*
-    else if ( el -> right -> info >= temp )
-    {
-        insert ( el -> left , a );
-    }*/
+        el->right = new Leaf <T> ();
+        el->right->info = temp;
+        el->right->right = NULL;
+        el->right->left = NULL;
+    }
     else
     {
-        insert (el -> right , temp );
+        insert (el->right , temp );
     }
 }
 
@@ -236,18 +239,18 @@ int Heap <T> :: min( Leaf <T> * el )
     {
         return -1;
     }
-    if ( el -> left != NULL)
+    if ( el->left != NULL)
     {
         return min(el->left);
     }
-    else if ( el -> left == NULL && el -> right != NULL )
+    else if ( el->left == NULL && el->right != NULL )
     {
-        int b = min ( el -> right );
-        return ( el->info < b ) ? el -> info : b;
+        int b = min ( el->right );
+        return ( el->info < b ) ? el->info : b;
     }
     else
     {
-        return el -> info;
+        return el->info;
     }
 }
 
@@ -262,4 +265,18 @@ int Heap <T> :: max()
     {
         return top->info;
     }
+}
+
+template <typename T>
+void Heap <T> :: del_all( Leaf <T> * el )
+{
+    if (el->left != NULL)
+    {
+        del_all (el->left);
+    }
+    if (el->right != NULL)
+    {
+        del_all (el->right);
+    }
+    delete el;
 }
