@@ -240,10 +240,12 @@ Leaf <T> * Heap <T>::pop(Leaf <T> *newroot, Leaf <T> *oldroot)
     if (rand() & 1)
     {
 	    newroot->left = pop (newroot->left, oldroot);
+        resort(oldroot);
     }
     else
     {
         newroot->right = pop (newroot->right, oldroot);
+        resort(oldroot);
     }
 	return newroot;
 }
