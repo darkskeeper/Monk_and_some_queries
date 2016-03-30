@@ -7,7 +7,24 @@ struct Leaf
 {
     T info;
     Leaf<T> * left, * right;
+    Leaf(const T & value);
+    ~Leaf();
 };
+
+template <typename T>
+Leaf <T>::Leaf (const T & value)
+{
+    this->info = value;
+    this->left = nullptr;
+    this->right = nullptr;
+}
+
+template <typename T>
+Leaf <T>::~Leaf ()
+{
+    if(left) delete left;
+    if(right) delete right;
+}
 
 template <typename T>
 class Heap
@@ -17,7 +34,7 @@ private:
 public:
     Heap ();
     Heap ( Leaf <T> * root );
-    ~Heap(){};
+    ~Heap();
     void push ( T & value );
     Leaf <T> * find_value ( Leaf <T> * root, T & value );
     Leaf <T> * pop ( Leaf <T> * newroot,  Leaf <T> * oldroot );
@@ -26,6 +43,12 @@ public:
     int max();
     void resort ( Leaf <T> * root );
 };
+
+template <typename T>
+Heap <T>::~Heap()
+{
+    delete top;
+}
 
 template <class C>
 class smart_pointer
@@ -62,10 +85,18 @@ int main()
         {
         case 1:
             cin >> key;
+            key1=0;
             pHeap->push(key);
             while (!q.empty() && q.back() > key)
-	            q.pop_back();
+            {
+                key1 = q.back();
+                q.pop_back();
+            }
             q.push_back (key);
+            if (key1!=0)
+            {
+                q.push_back (key1);
+            }
             break;
         case 2:
             cin >> key;
@@ -180,6 +211,10 @@ Leaf <T> * Heap <T> ::find_value( Leaf <T> *el, T & value )
         value = 0;
         if ( el->info == 0 )
         {
+            if ( el == top )
+            {
+                top = NULL;
+            }
             return NULL;
         }
         return el;
@@ -231,21 +266,19 @@ Leaf <T> * Heap <T>::pop(Leaf <T> *newroot, Leaf <T> *oldroot)
         {
             return newroot;
         }
-        //return newroot ? newroot : oldroot;
     }
     if ( oldroot->info > newroot->info )
     {
         swap(oldroot->info, newroot->info);
+        resort(oldroot);
     }
     if (rand() & 1)
     {
-	    newroot->left = pop (newroot->left, oldroot);
-        resort(oldroot);
+        newroot->left = pop (newroot->left, oldroot);
     }
     else
     {
         newroot->right = pop (newroot->right, oldroot);
-        resort(oldroot);
     }
 	return newroot;
 }
@@ -270,8 +303,18 @@ void Heap <T>::resort(Leaf <T> * root)
     {
         if ( root->info < root->left->info)
         {
-            swap (root->info, root->left->info);
-            resort ( root->left );
+            if ( root->right != NULL && root->right->info > root->left->info )
+            {
+                swap(root->info, root->right->info);
+                resort (root->right);
+                return ;
+            }
+            else
+            {
+                swap (root->info, root->left->info);
+                resort ( root->left );
+                return ;
+            }
         }
     }
     if ( root->right != NULL )
