@@ -151,10 +151,7 @@ void Heap <T> ::push( T & value)
 {
     if ( top == NULL )
     {
-        this->top = new Leaf <T> ();
-        top->info = value;
-        top->left = NULL;
-        top->right = NULL;
+        this->top = new Leaf <T> (value);
     }
     else
     {
@@ -167,23 +164,15 @@ void Heap <T> ::insert(Leaf <T> *el, T & value)
 {
     if ( el->info < value )
     {
-        int temp = el->info;
-        el->info = value;
-        value = temp;
+        swap( el->info, value );
     }
     if ( el->left == NULL )
     {
-        el->left = new Leaf<T> ();
-        el->left->info = value;
-        el->left->right = NULL;
-        el->left->left = NULL;
+        el->left = new Leaf<T> (value);
     }
     else if ( el->right == NULL )
     {
-        el->right = new Leaf<T> ();
-        el->right->info = value;
-        el->right->right = NULL;
-        el->right->left = NULL;
+        el->right = new Leaf<T> (value);
     }
     else
     {
@@ -254,7 +243,7 @@ Leaf <T> * Heap <T>::pop(Leaf <T> *newroot, Leaf <T> *oldroot)
     {
         if ( !newroot && !oldroot )
         {
-            newroot = new Leaf <T>();
+            newroot = new Leaf <T>(0);
             return newroot;
         }
         if ( oldroot )
