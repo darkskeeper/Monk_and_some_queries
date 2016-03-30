@@ -40,7 +40,6 @@ class Heap
 {
 private:
     Leaf <T> * top;
-    void insert ( Leaf <T> * root, T value);
     void resort ( Leaf <T> * root );
     void swap ( T & value, T & other_value );
     Leaf <T> * pop ( Leaf <T> * newroot,  Leaf <T> * oldroot );
@@ -163,34 +162,34 @@ void Heap <T> ::push( const T & value)
     }
     else
     {
-        insert ( top , value );
-    }
-}
-
-template <typename T>
-void Heap <T> ::insert(Leaf <T> *el, T value)
-{
-    if ( el->info < value )
-    {
-        swap( el->info, value );
-    }
-    if ( el->left == NULL )
-    {
-        el->left = new Leaf<T> (value);
-    }
-    else if ( el->right == NULL )
-    {
-        el->right = new Leaf<T> (value);
-    }
-    else
-    {
-        if (rand() & 1 )
+        int temp = value;
+        Leaf <T> *el = top;
+        while ( el->left && el->right )
         {
-            insert (el->left, value);
+            if ( temp > el->info )
+            {
+                swap(temp, el->info);
+            }
+            if (rand()&1)
+            {
+                el = el->left;
+            }
+            else
+            {
+                el = el->right;
+            }
+        }
+        if ( temp > el->info )
+        {
+            swap(temp, el->info);
+        }
+        if ( !(el->left) )
+        {
+            el->left = new Leaf <T> (temp);
         }
         else
         {
-            insert (el->right, value);
+            el->right = new Leaf <T> (temp);
         }
     }
 }
