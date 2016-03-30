@@ -8,8 +8,17 @@ struct Leaf
     T info;
     Leaf<T> * left, * right;
     Leaf(const T & value);
+    Leaf();
     ~Leaf();
 };
+
+template <typename T>
+Leaf <T>::Leaf ()
+{
+    this->info = NULL;
+    this->left = nullptr;
+    this->right = nullptr;
+}
 
 template <typename T>
 Leaf <T>::Leaf (const T & value)
@@ -31,17 +40,16 @@ class Heap
 {
 private:
     Leaf <T> * top;
+    void insert ( Leaf <T> * root, T value);
+    void resort ( Leaf <T> * root );
+    void swap ( T & value, T & other_value );
+    Leaf <T> * pop ( Leaf <T> * newroot,  Leaf <T> * oldroot );
 public:
     Heap ();
-    Heap ( Leaf <T> * root );
     ~Heap();
-    void push ( T & value );
+    void push ( const T & value );
     Leaf <T> * find_value ( Leaf <T> * root, T & value );
-    Leaf <T> * pop ( Leaf <T> * newroot,  Leaf <T> * oldroot );
-    void insert ( Leaf <T> * root, T & value);
-    void swap ( T & value, T & other_value );
-    int max();
-    void resort ( Leaf <T> * root );
+    T max () const;
 };
 
 template <typename T>
@@ -147,7 +155,7 @@ Heap <T> :: Heap()
 }
 
 template <typename T>
-void Heap <T> ::push( T & value)
+void Heap <T> ::push( const T & value)
 {
     if ( top == NULL )
     {
@@ -160,7 +168,7 @@ void Heap <T> ::push( T & value)
 }
 
 template <typename T>
-void Heap <T> ::insert(Leaf <T> *el, T & value)
+void Heap <T> ::insert(Leaf <T> *el, T value)
 {
     if ( el->info < value )
     {
@@ -273,7 +281,7 @@ Leaf <T> * Heap <T>::pop(Leaf <T> *newroot, Leaf <T> *oldroot)
 }
 
 template <typename T>
-int Heap<T>::max()
+T Heap<T>::max() const
 {
     if ( top ==  NULL )
     {
