@@ -1,7 +1,9 @@
 #include <iostream>
 #include <deque>
+#include <stack>
 using namespace std;
 
+//done
 template <typename T>
 struct Leaf
 {
@@ -12,6 +14,7 @@ struct Leaf
     ~Leaf();
 };
 
+//done
 template <typename T>
 Leaf <T>::Leaf ()
 {
@@ -20,6 +23,7 @@ Leaf <T>::Leaf ()
     this->right = nullptr;
 }
 
+//done
 template <typename T>
 Leaf <T>::Leaf (const T & value)
 {
@@ -28,6 +32,7 @@ Leaf <T>::Leaf (const T & value)
     this->right = nullptr;
 }
 
+//done
 template <typename T>
 Leaf <T>::~Leaf ()
 {
@@ -35,6 +40,7 @@ Leaf <T>::~Leaf ()
     if(right) delete right;
 }
 
+//done?
 template <typename T>
 class Heap
 {
@@ -42,21 +48,22 @@ private:
     Leaf <T> * top;
     void resort ( Leaf <T> * root );
     void swap ( T & value, T & other_value );
-    Leaf <T> * pop ( Leaf <T> * newroot,  Leaf <T> * oldroot );
 public:
     Heap ();
     ~Heap();
     void push ( const T & value );
-    Leaf <T> * find_value ( Leaf <T> * root, T & value );
+    bool find_value ( const T & value );
     T max () const;
 };
 
+//done?
 template <typename T>
 Heap <T>::~Heap()
 {
     delete top;
 }
 
+//done?
 template <class C>
 class smart_pointer
 {
@@ -77,6 +84,7 @@ public:
     }
 };
 
+//done?
 int main()
 {
     deque <int> q;
@@ -107,9 +115,7 @@ int main()
             break;
         case 2:
             cin >> key;
-            key1 = key;
-            pHeap->find_value ( NULL , key );
-            if ( key != 0 )
+            if (!pHeap->find_value (key))
             {
                 cout << "-1" << endl;
             }
@@ -117,9 +123,9 @@ int main()
             {
                 for (it = q.begin(); it < q.end(); it++)
                 {
-                    if ( *it >= key1 )
+                    if ( *it >= key )
                     {
-                        if (*it == key1)
+                        if (*it == key)
                         {
                             q.erase(it);
                         }
@@ -147,12 +153,14 @@ int main()
     return 0;
 }
 
+//done
 template <typename T>
 Heap <T> :: Heap()
 {
     top = NULL;
 }
 
+//done
 template <typename T>
 void Heap <T> ::push( const T & value)
 {
@@ -194,47 +202,151 @@ void Heap <T> ::push( const T & value)
     }
 }
 
+//done
 template <typename T>
-Leaf <T> * Heap <T> ::find_value( Leaf <T> *el, T & value )
+bool Heap <T> ::find_value( const T & value )
 {
-    if ( el == NULL && top != NULL )
+    stack <Leaf<T>*> st;
+    Leaf <T> *el;
+    if ( top )
     {
         el = top;
     }
-    if ( el->info == value )
+    else
     {
-        *el = *pop (el->left, el->right);
-        value = 0;
-        if ( el->info == 0 )
+        return false;
+    }
+    while (true)
+    {
+        while ( el->info >= value )
         {
-            if ( el == top )
+            if ( el->info == value )
             {
-                top = NULL;
+                if ( !el->left && !el->right )
+                {
+                    if ( el == top )
+                    {
+                        delete top;
+                        top = nullptr;
+                        //top = NULL;
+                        return true;
+                    }
+                    el = st.top();
+                    st.pop();
+                    if ( st.empty() || el->right == st.top() )
+                    {
+                        delete el->left;
+                        el->left = nullptr;
+                    }
+                    else
+                    {
+                        delete el->right;
+                        el->right = nullptr;
+                    }
+                }
+                else
+                {
+                    Leaf <T> *eltop = el;
+                    while(el->left||el->right)
+                    {
+                        if( el->left && el->right )
+                        {
+                            if( rand() & 1 )
+                            {
+                                st.push (el->right);
+                                st.push (el);
+                                el = el->left;
+                            }
+                            else
+                            {
+                                st.push (el->left);
+                                st.push (el);
+                                el = el->right;
+                            }
+                        }
+                        else
+                        {
+                            st.push(el);
+                            if (el->left)
+                            {
+                                el = el->left;
+                            }
+                            else
+                            {
+                                el = el->right;
+                            }
+                        }
+                    }
+                    swap(el->info, eltop->info);
+                    //eltop = nullptr;//????
+                    //delete el;
+                    el = st.top();
+                    st.pop();
+                    if ( el->left && el->right )
+                    {
+                        if ( st.top() == el->left )
+                        {
+                            delete el->right;
+                            el->right = nullptr;
+                        }
+                        else
+                        {
+                            delete el->left;
+                            el->left = nullptr;
+                        }
+                    }
+                    else
+                    {
+                        if (el->left)
+                        {
+                            delete el->left;
+                            el->left = nullptr;
+                        }
+                        else
+                        {
+                            delete el->right;
+                            el->right = nullptr;
+                        }
+                    }
+                    resort(eltop);
+                }
+                return true;
             }
-            return NULL;
-        }
-        return el;
-    }
-    else if ( el->left != NULL )
-    {
-        if ( el->left->info >= value )
-        {
-            el->left = find_value( el->left, value );
-        }
-    }
-    if ( value != 0 )
-    {
-        if ( el->right != NULL )
-        {
-            if ( el->right->info >= value )
+            else
             {
-                el->right = find_value( el->right, value );
+                if ( el->left )
+                {
+                    if ( el->right )
+                    {
+                        st.push( el->right );
+                    }
+                    st.push(el);
+                    el = el->left;
+                }
+                else if ( el->right )
+                {
+                    st.push(el);
+                    el = el->right;
+                }
+                else
+                {
+                    break;
+                }
             }
         }
+        if (!st.empty())
+        {
+            el = st.top();
+            st.pop();
+        }
+        else
+        {
+            return false;
+        }
     }
-    return el;
 }
 
+//done
 template <typename T>
 void Heap <T> ::swap ( T & value, T & other_value )
 {
@@ -243,42 +355,7 @@ void Heap <T> ::swap ( T & value, T & other_value )
     other_value = temp;
 }
 
-template <typename T>
-Leaf <T> * Heap <T>::pop(Leaf <T> *newroot, Leaf <T> *oldroot)
-{
-    if ( !newroot || !oldroot )
-    {
-        if ( !newroot && !oldroot )
-        {
-            newroot = new Leaf <T>(0);
-            return newroot;
-        }
-        if ( oldroot )
-        {
-            resort(oldroot);
-            return oldroot;
-        }
-        else
-        {
-            return newroot;
-        }
-    }
-    if ( oldroot->info > newroot->info )
-    {
-        swap(oldroot->info, newroot->info);
-        resort(oldroot);
-    }
-    if (rand() & 1)
-    {
-        newroot->left = pop (newroot->left, oldroot);
-    }
-    else
-    {
-        newroot->right = pop (newroot->right, oldroot);
-    }
-	return newroot;
-}
-
+//done
 template <typename T>
 T Heap<T>::max() const
 {
@@ -292,6 +369,7 @@ T Heap<T>::max() const
     }
 }
 
+//done
 template <typename T>
 void Heap <T>::resort(Leaf <T> * root)
 {
