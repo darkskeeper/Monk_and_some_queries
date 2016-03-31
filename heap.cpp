@@ -218,132 +218,100 @@ bool Heap <T> ::find_value( const T & value )
     }
     while (true)
     {
-        while ( el->info >= value )
+        while ( el && el->info >= value )
         {
-            if ( el->info == value )
+            if ( el->info == value )//если мы нашли элемент с текущим значением
             {
-                if ( !el->left && !el->right )
+                if ( !el->left && !el->right )//если у найденного элемента нету детей
                 {
-                    if ( el == top )
+                    if ( el == top )//если это вершина дерева удаляем её
                     {
                         delete top;
                         top = nullptr;
-                        //top = NULL;
-                        return true;
                     }
-                    el = st.top();
-                    st.pop();
-                    if ( st.empty() || el->right == st.top() )
+                    else//иначе проверяем
+                    {
+                        if(st.top() && st.top()->right == el)//если указатель на правый элемент вершины стека равен текущему, то
+                        {
+                            el = st.top();//берём вершину стека и удаляем правый
+                            delete el->right;
+                            el->right = nullptr;
+                        }
+                        else//иначе
+                        {
+                            st.pop();//вытаскиваем указатель на правый элемент нужной вершины из стека
+                            el = st.top();//текущий элемент становится вершиной, от которой мы удаляем левый элемент
+                            delete el->left;
+                            el->left = nullptr;
+                        }
+                    }//заканчивается условие, когда найденный элемент - не вершина дерева
+                }//заканчивается условие, когда у найденного элемента нет детей
+                else//если у найденного элемента есть дети
+                {
+                    Leaf <T> *elnew = el;//запоминаем удаляемый элемент
+                    while ( el->left || el->right ) //пока у нас есть правый или левый элемент
+                    {
+                        st.push(el);//запоминаем текущий
+                        if (el->left)//если есть левый - идём влево
+                        {
+                            el = el->left;
+                        }
+                        else //иначе вправо
+                        {
+                            el = el->right;
+                        }
+                    }//заканчивается цикл, пока у элемента есть хоть 1 ребёнок
+                    swap(el->info, elnew->info);//меняем значения у удаляемой вершины и найденного крайнего листа
+                    el = st.top();//элемент - родитель листа
+                    if (el->left)//если у элемента есть левый лист - удаляем его
                     {
                         delete el->left;
                         el->left = nullptr;
                     }
-                    else
+                    else//иначе правый
                     {
                         delete el->right;
                         el->right = nullptr;
                     }
-                }
-                else
-                {
-                    Leaf <T> *eltop = el;
-                    while(el->left||el->right)
-                    {
-                        if( el->left && el->right )
-                        {
-                            if( rand() & 1 )
-                            {
-                                st.push (el->right);
-                                st.push (el);
-                                el = el->left;
-                            }
-                            else
-                            {
-                                st.push (el->left);
-                                st.push (el);
-                                el = el->right;
-                            }
-                        }
-                        else
-                        {
-                            st.push(el);
-                            if (el->left)
-                            {
-                                el = el->left;
-                            }
-                            else
-                            {
-                                el = el->right;
-                            }
-                        }
-                    }
-                    swap(el->info, eltop->info);
-                    //eltop = nullptr;//????
-                    //delete el;
-                    el = st.top();
-                    st.pop();
-                    if ( el->left && el->right )
-                    {
-                        if ( st.top() == el->left )
-                        {
-                            delete el->right;
-                            el->right = nullptr;
-                        }
-                        else
-                        {
-                            delete el->left;
-                            el->left = nullptr;
-                        }
-                    }
-                    else
-                    {
-                        if (el->left)
-                        {
-                            delete el->left;
-                            el->left = nullptr;
-                        }
-                        else
-                        {
-                            delete el->right;
-                            el->right = nullptr;
-                        }
-                    }
-                    resort(eltop);
-                }
-                return true;
-            }
-            else
+                    resort(elnew);//пересортировываем после удаления нужного листа
+                }//заканчивается условие, когда у найденного элемента есть дети
+                return true;//в любом случае возвращаем успех, когда нашли элемент
+            }//заканчивается условие, когда мы нашли элемент
+            else//если значение вершины больше value, запихиваем в стек текущий элемент, а затем указатель на правый
             {
-                if ( el->left )
-                {
-                    if ( el->right )
-                    {
-                        st.push( el->right );
-                    }
-                    st.push(el);
-                    el = el->left;
-                }
-                else if ( el->right )
-                {
-                    st.push(el);
-                    el = el->right;
-                }
-                else
-                {
-                    break;
-                }
+                st.push(el);
+                st.push(el->right);
+                el = el->left;
+            }//
+        }//while( el && el->info >= value)
+        while (!st.empty())
+        {
+            while ( !st.top() )
+            {
+                el = st.top();
+                st.pop();
+            }
+            while ( !st.empty() && st.top() && st.top()->right == el )
+            {
+                el=st.top();
+                st.pop();
+            }
+            if (st.empty())
+            {
+                return false;
+            }
+            if (st.top())
+            {
+                break;
             }
         }
-        if (!st.empty())
-        {
-            el = st.top();
-            st.pop();
-        }
-        else
+        if (st.empty())
         {
             return false;
         }
-    }
+        el = st.top();
+        st.pop();
+    }//while (true)
 }
 
 //done
