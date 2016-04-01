@@ -48,6 +48,7 @@ private:
     Leaf <T> * top;
     void resort ( Leaf <T> * root );
     void swap ( T & value, T & other_value );
+    void pop ( Leaf <T> * root );
 public:
     Heap ();
     ~Heap();
@@ -204,10 +205,10 @@ void Heap <T> ::push( const T & value)
 
 //done
 template <typename T>
-bool Heap <T> ::find_value( const T & value )
+bool Heap <T> ::find_value ( const T & value )
 {
-    stack <Leaf<T>*> st;
-    Leaf <T> *el;
+    stack <Leaf <T> *> st;
+    Leaf <T> * el;
     if ( top )
     {
         el = top;
@@ -218,101 +219,123 @@ bool Heap <T> ::find_value( const T & value )
     }
     while (true)
     {
-        while ( el && el->info >= value )
+        while ( el->info >= value )
         {
-            if ( el->info == value )//если мы нашли элемент с текущим значением
+            if (el->info == value)
             {
-                if ( !el->left && !el->right )//если у найденного элемента нету детей
+                if ( !el->left && !el->right )
                 {
-                    if ( el == top )//если это вершина дерева удаляем её
+                    if ( el == top )
                     {
                         delete top;
                         top = nullptr;
                     }
-                    else//иначе проверяем
+                    else
                     {
-                        if(st.top() && st.top()->right == el)//если указатель на правый элемент вершины стека равен текущему, то
+                        if ( el == st.top()->right )
                         {
-                            el = st.top();//берём вершину стека и удаляем правый
-                            delete el->right;
-                            el->right = nullptr;
+                            delete st.top()->right;
+                            st.top()->right = nullptr;
                         }
-                        else//иначе
+                        else
                         {
-                            st.pop();//вытаскиваем указатель на правый элемент нужной вершины из стека
-                            el = st.top();//текущий элемент становится вершиной, от которой мы удаляем левый элемент
-                            delete el->left;
-                            el->left = nullptr;
+                            if ( el != st.top()->left )
+                            {
+                                st.pop();
+                            }
+                            delete st.top()->left;
+                            st.top()->left = nullptr;
                         }
-                    }//заканчивается условие, когда найденный элемент - не вершина дерева
-                }//заканчивается условие, когда у найденного элемента нет детей
-                else//если у найденного элемента есть дети
+                    }
+                }
+                else
                 {
-                    Leaf <T> *elnew = el;//запоминаем удаляемый элемент
-                    while ( el->left || el->right ) //пока у нас есть правый или левый элемент
+                    pop(el);
+                    resort(el);
+                }
+                return true;
+            }
+            else
+            {
+                if (el->left || el->right)
+                {
+                    st.push(el);
+                    if (el->left)
                     {
-                        st.push(el);//запоминаем текущий
-                        if (el->left)//если есть левый - идём влево
+                        if(el->right)
                         {
-                            el = el->left;
+                            st.push(el->right);
                         }
-                        else //иначе вправо
-                        {
-                            el = el->right;
-                        }
-                    }//заканчивается цикл, пока у элемента есть хоть 1 ребёнок
-                    swap(el->info, elnew->info);//меняем значения у удаляемой вершины и найденного крайнего листа
-                    el = st.top();//элемент - родитель листа
-                    if (el->left)//если у элемента есть левый лист - удаляем его
-                    {
-                        delete el->left;
-                        el->left = nullptr;
+                        el = el->left;
                     }
-                    else//иначе правый
+                    else
                     {
-                        delete el->right;
-                        el->right = nullptr;
+                        el = el->right;
                     }
-                    resort(elnew);//пересортировываем после удаления нужного листа
-                }//заканчивается условие, когда у найденного элемента есть дети
-                return true;//в любом случае возвращаем успех, когда нашли элемент
-            }//заканчивается условие, когда мы нашли элемент
-            else//если значение вершины больше value, запихиваем в стек текущий элемент, а затем указатель на правый
-            {
-                st.push(el);
-                st.push(el->right);
-                el = el->left;
-            }//
-        }//while( el && el->info >= value)
-        while (!st.empty())
-        {
-            while ( !st.top() )
-            {
-                el = st.top();
-                st.pop();
-            }
-            while ( !st.empty() && st.top() && st.top()->right == el )
-            {
-                el=st.top();
-                st.pop();
-            }
-            if (st.empty())
-            {
-                return false;
-            }
-            if (st.top())
-            {
-                break;
+                }
+                else
+                {
+                    break;//???если детей у элемента нету,то возвращаемся назад
+                }
             }
         }
-        if (st.empty())
+        while ( !st.empty() && (el == st.top()->right || el == st.top()->left) )
+        {
+            el = st.top();
+            st.pop();
+        }
+        if ( !st.empty() )
+        {
+            el = st.top();
+            st.pop();
+        }
+        else
         {
             return false;
         }
-        el = st.top();
-        st.pop();
-    }//while (true)
+    }
 }
+
+template <typename T>
+void Heap <T> ::pop ( Leaf <T> * el )
+{
+    Leaf <T> *el_del = el, *el_before_del;
+    while ( el_del->left || el_del->right )
+    {
+        el_before_del = el_del;
+        if ( el_del->left && el_del->right )
+        {
+            if ( rand()%1 )
+            {
+                el_del = el_del->left;
+            }
+            else
+            {
+                el_del = el_del->right;
+            }
+        }
+        else if ( el_del->left )
+        {
+            el_del = el_del->left;
+        }
+        else
+        {
+            el_del = el_del->right;
+        }
+    }
+    swap (el_del->info, el->info);
+    if ( el_del == el_before_del->left )
+    {
+        delete el_before_del->left;
+        el_before_del->left = nullptr;
+    }
+    else
+    {
+        delete el_before_del->right;
+        el_before_del->right = nullptr;
+    }
+}
+
 
 //done
 template <typename T>
