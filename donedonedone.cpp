@@ -5,190 +5,190 @@ using namespace std;
 template <typename T>
 struct Leaf
 {
-	T info;
-	Leaf <T> *left, *right;
-	Leaf();
-	Leaf(const T & value);
-	~Leaf();
+    T info;
+    Leaf <T> *left, *right;
+    Leaf();
+    Leaf(const T & value);
+    ~Leaf();
 };
 
 template <typename T>
 Leaf <T>::Leaf()
 {
-	this->info = NULL;
-	this->right = nullptr;
-	this->left = nullptr;
+    this->info = NULL;
+    this->right = nullptr;
+    this->left = nullptr;
 }
 
 template <typename T>
 Leaf <T>::Leaf(const T & value)
 {
-	this->info = value;
-	this->right = nullptr;
-	this->left = nullptr;
+    this->info = value;
+    this->right = nullptr;
+    this->left = nullptr;
 }
 
 template <typename T>
 Leaf <T>::~Leaf()
 {
-	if (left) delete left;
-	if (right) delete right;
+    if (left) delete left;
+    if (right) delete right;
 }
 
 template <typename T>
 class Tree
 {
 private:
-	Leaf <T> * top;
-	void swap(T & value, T & other_value);
-	void pop(Leaf <T> * root);
+    Leaf <T> * top;
+    void swap(T & value, T & other_value);
+    void pop(Leaf <T> * root);
     void resort(Leaf <T> * root);
 public:
-	Tree();
-	~Tree();
-	void push(const T & value);
-	bool find_value(const T & value);
-	T max() const;
-	T min() const;
+    Tree();
+    ~Tree();
+    void push(const T & value);
+    bool find_value(const T & value);
+    T max() const;
+    T min() const;
 };
 
 int main()
 {
-	Tree <int> ob;
-	int T, key;
-	cin >> T;
-	while (T--)
-	{
-		cin >> key;
-		switch (key)
-		{
-		case 1:
-			cin >> key;
-			ob.push(key);
-			break;
-		case 2:
-			cin >> key;
-			if (!ob.find_value(key))
-			{
-				cout << "-1" << endl;
-			}
-			break;
-		case 3:
-			cout << ob.max() << endl;
-			break;
-		case 4:
-			cout << ob.min() << endl;
-			break;
-		}
-	}
-	return 0;
+    Tree <int> ob;
+    int T, key;
+    cin >> T;
+    while (T--)
+    {
+        cin >> key;
+        switch (key)
+        {
+        case 1:
+            cin >> key;
+            ob.push(key);
+            break;
+        case 2:
+            cin >> key;
+            if (!ob.find_value(key))
+            {
+                cout << "-1" << endl;
+            }
+            break;
+        case 3:
+            cout << ob.max() << endl;
+            break;
+        case 4:
+            cout << ob.min() << endl;
+            break;
+        }
+    }
+    return 0;
 }
 
 template <typename T>
 Tree <T>::Tree()
 {
-	top = NULL;
+    top = NULL;
 }
 
 template <typename T>
 Tree <T>::~Tree()
 {
-	delete top;
+    delete top;
 }
 
 template <typename T>
 void Tree <T>::push(const T & value)
 {
-	if (top == NULL)
-	{
-		top = new Leaf<T>(value);
-	}
-	else
-	{
-		Leaf <T> * el = top;
-		while (true)
-		{
-			if (value <= el->info)
-			{
-				if (el->left == NULL)
-				{
-					el->left = new Leaf<T>(value);
+    if (top == NULL)
+    {
+        top = new Leaf<T>(value);
+    }
+    else
+    {
+        Leaf <T> * el = top;
+        while (true)
+        {
+            if (value <= el->info)
+            {
+                if (el->left == NULL)
+                {
+                    el->left = new Leaf<T>(value);
                     break;
-				}
-				el = el->left;
-			}
-			else
-			{
+                }
+                el = el->left;
+            }
+            else
+            {
                 if (el->right == NULL)
                 {
                     el->right = new Leaf<T>(value);
                     break;
                 }
-				el = el->right;
-			}
-		}
-	}
+                el = el->right;
+            }
+        }
+    }
 }
 
 template <typename T>
 void Tree <T> ::swap(T & value, T & other_value)
 {
-	int temp = value;
-	value = other_value;
-	other_value = temp;
+    int temp = value;
+    value = other_value;
+    other_value = temp;
 }
 
 template <typename T>
 T Tree<T>::max() const
 {
-	if (!top)
-	{
-		return -1;
-	}
-	else
-	{
-		Leaf <T> * el = top;
-		while (el->right != NULL)
-		{
-			el = el->right;
-		}
-		return el->info;
-	}
+    if (!top)
+    {
+        return -1;
+    }
+    else
+    {
+        Leaf <T> * el = top;
+        while (el->right != NULL)
+        {
+            el = el->right;
+        }
+        return el->info;
+    }
 }
 
 template <typename T>
 T Tree<T>::min() const
 {
-	if (!top)
-	{
-		return -1;
-	}
-	else
-	{
-		Leaf <T> * el = top;
-		while (el->left != NULL)
-		{
-			el = el->left;
-		}
-		return el->info;
-	}
+    if (!top)
+    {
+        return -1;
+    }
+    else
+    {
+        Leaf <T> * el = top;
+        while (el->left != NULL)
+        {
+            el = el->left;
+        }
+        return el->info;
+    }
 }
 
 template <typename T>
 bool Tree<T>::find_value(const T & value)
 {
-	if (!top)
-	{
-		return false;
-	}
-	else
-	{
+    if (!top)
+    {
+        return false;
+    }
+    else
+    {
         stack <Leaf<T> *> st;
-		Leaf <T> * el = top;
-		while (el != NULL)
-		{
-			if (value == el->info)
-			{
+        Leaf <T> * el = top;
+        while (el != NULL)
+        {
+            if (value == el->info)
+            {
                 if (!el->left && !el->right)
                 {
                     if (el == top)
@@ -221,7 +221,7 @@ bool Tree<T>::find_value(const T & value)
                     }
                 }
                 return true;
-			}
+            }
             else
             {
                 st.push(el);
@@ -234,9 +234,9 @@ bool Tree<T>::find_value(const T & value)
                     el = el->left;
                 }
             }
-		}
-		return false;
-	}
+        }
+        return false;
+    }
 }
 
 template <typename T>
